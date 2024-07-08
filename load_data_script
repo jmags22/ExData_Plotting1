@@ -1,0 +1,27 @@
+# Load the data with initial NA handling
+data <- read.table("household_power_consumption.txt", sep = ";", header = TRUE, 
+                   na.strings = "?", colClasses = c("character", "character", "numeric", 
+                                                    "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric"),
+                   stringsAsFactors = FALSE)
+
+# Convert 'Date' into Date class for accurate filtering
+data$Date <- as.Date(data$Date, format = "%d/%m/%Y")
+
+# Subset the data for the specific dates 2007-02-01 to 2007-02-02
+subset_data <- data[data$Date >= as.Date("2007-02-01") & data$Date <= as.Date("2007-02-02"), ]
+
+# Convert 'Time' into POSIXct, combining with 'Date'
+subset_data$DateTime <- as.POSIXct(paste(subset_data$Date, subset_data$Time), format = "%Y-%m-%d %H:%M:%S")
+
+# Optionally remove the now redundant 'Date' and 'Time' columns
+subset_data$Date <- NULL
+subset_data$Time <- NULL
+
+# Convert all numeric columns in case any are left as character due to initial NA strings
+numeric_cols <- c("Global_active_power", "Global_reactive_power", "Voltage", 
+                  "Global_intensity", "Sub_metering_1", "Sub_metering_2", "Sub_metering_3")
+subset_data[numeric_cols] <- lapply(subset_data[numeric_cols], as.numeric)
+
+# Check the structure to ensure everything is correct
+str(subset_data)
